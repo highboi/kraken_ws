@@ -1,0 +1,182 @@
+body {
+	background-color: var(--darkest-purple);
+	font-family: monospace;
+}
+
+#portal {
+	background-color: var(--darkest-purple);
+	padding: 10px;
+}
+
+#portal h1 {
+	background-color: var(--purple);
+	padding: 10px;
+}
+
+#portal #network {
+
+}
+
+#portal #wasm-upload {
+	display: none;
+}
+
+#portal #wasm {
+	display: none;
+}
+
+/*
+STYLING THE TOP BANNER
+*/
+
+#banner-top {
+	width: 90vw;
+	height: auto;
+	margin: 0 auto;
+	text-align: center;
+	border: solid var(--hot-pink);
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+	background-color: var(--dark-purple);
+}
+
+#banner-top img {
+	width: 100px;
+	height: 100px;
+	border: solid var(--hot-pink);
+	border-radius: 10px;
+}
+
+#peerid {
+	color: var(--light-blue);
+	font-size: 40px;
+}
+
+#text-log {
+	max-width: 300px;
+	max-height: 70px;
+	color: var(--light-blue);
+	overflow-x: scroll;
+	overflow-y: scroll;
+	border: solid var(--hot-pink);
+	padding: 10px;
+}
+
+/*
+STYPING THE CONTENT FEED
+*/
+
+#panel {
+	color: var(--light-blue);
+	margin: 0 auto;
+	text-align: center;
+	border: solid var(--hot-pink);
+	width: 90vw;
+	height: 60vh;
+	padding: 10px;
+	background-color: var(--darkest-purple);
+	overflow-y: scroll;
+}
+
+#panel .node {
+	border: solid var(--hot-pink);
+}
+
+/*
+STYLING THE BOTTOM BANNER
+*/
+
+#banner-bottom {
+	width: 90vw;
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	margin: 0 auto;
+	border: solid var(--hot-pink);
+	padding: 10px;
+	color: var(--light-blue);
+	background-color: var(--dark-purple);
+}
+
+#banner-bottom > div {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
+
+#banner-bottom .icon {
+	background-color: var(--darkest-purple);
+	border: solid var(--hot-pink);
+	padding: 10px;
+	font-size: 15px;
+}
+
+#banner-bottom .icon:hover {
+	transform: scale(1.2);
+}
+
+#banner-bottom .icon img {
+	width: 50px;
+	height: auto;
+	border: solid var(--hot-pink);
+}
+
+#banner-bottom .uploadform {
+	text-align: center;
+	margin: 0 auto;
+	background-color: var(--darkest-purple);
+	border: solid var(--hot-pink);
+	padding: 10px;
+	display: none;
+	font-size: 20px;
+}	
+
+#banner-bottom .uploadform h4 {
+	background-color: var(--dark-purple);
+	border: solid var(--hot-pink);
+	padding: 10px;
+}
+
+#banner-bottom .uploadform input {
+	color: var(--light-blue);
+	background-color: var(--dark-purple);
+	border: solid var(--hot-pink);
+	margin: 10px;
+}
+
+#banner-bottom .uploadform textarea {
+	color: var(--light-blue);
+	background-color: var(--dark-purple);
+	border: solid var(--hot-pink);
+	margin: 10px;
+}
+
+#banner-bottom .uploadform button {
+	border: solid var(--hot-pink);
+	color: var(--light-blue);
+	background-color: var(--dark-purple);
+	cursor: pointer;
+	margin: 5px;
+	padding: 5px;
+	font-size: 15px;
+}
+
+#banner-bottom .uploadform .filelabel {
+	border: solid var(--hot-pink);
+	background-color: var(--dark-purple);
+	padding: 5px;
+	margin: 20px;
+	cursor: pointer;
+}
+
+#banner-bottom .uploadform input[type="file"]{
+	display: none;
+}

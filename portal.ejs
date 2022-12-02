@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Kraken</title>
+		<link rel="stylesheet" type="text/css" href="/style/main.css">
+		<link rel="icon" type="image/png" href="/icons/kraken_notext.png">
+	</head>
+	<body>
+		<div id="eventlistener" style="display: none;"></div>
+
+		<div id="portal">
+			<div id="banner-top">
+				<img src="/icons/kraken_logo_blue.png">
+				<div id="peerid">CONNECTING TO NETWORK...</div>
+				<div id="text-log"></div>
+			</div>
+
+			<div id="panel">
+				<div class="page" id="network">
+					<h1>NETWORK MANAGEMENT PANEL</h1>
+					<% if (typeof nodes != 'undefined') { %>
+						<% for (var node of Object.values(nodes)) { %>
+							<div class="node">
+								<h2>NODE <%= node.userid %>:</h2>
+								<p><%= JSON.stringify(node.attributes) %></p>
+							</div>
+						<% } %>
+					<% } %>
+				</div>
+				<div class="page" id="wasm-upload">
+					<h1>WebAssembly (WASM) RUNTIME</h1>
+
+					<div id="terminal">
+						<h2>Code Runtime/Output:</h2>
+						<div id="runtime">
+
+						</div>
+					</div>
+				</div>
+				<div class="page" id="wasm">
+					<h1>WebAssembly (WASM) PROGRAM MANAGER</h1>
+					<form method="post" action="/wasm-upload" enctype="multipart/form-data" id="compileform">
+						<h2>WASM Compiler:</h2>
+
+						<label for="title">Name of Program:</label><br>
+						<input id="title" name="title" type="text"><br>
+
+						<label for="code" class="filelabel">Upload Code!</label><br>
+						<input id="code" name="code" type="file"><br>
+
+						<button id="wasm-submit" type="button">Upload!</button>
+					</form>
+				</div>
+			</div>
+
+			<div id="banner-bottom">
+				<div>
+					<div class="icon" id="kraken-network">
+						<img src="/icons/kraken_network.png">
+						<p>Manage Network</p>
+					</div>
+
+					<div class="icon" id="wasm-compile">
+						<img src="/icons/kraken_compile.png">
+						<p>Run WASM Binaries</p>
+					</div>
+
+					<div class="icon" id="wasm-manage">
+						<img src="/icons/kraken_wasm.png">
+						<p>Manage WASM Binaries</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="/javascript/tsunami.js"></script>
+		<script type="text/javascript" src="/javascript/menu.js"></script>
+		<script type="text/javascript" src="/javascript/wasm_upload.js"></script>
+	</body>
+</html>

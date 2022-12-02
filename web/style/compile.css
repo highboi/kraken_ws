@@ -1,0 +1,29 @@
+body {
+	color: var(--green);
+	background-color: var(--dark-purple);
+}
+
+#compileform {
+	text-align: center;
+	margin: 0 auto;
+	border: solid var(--hot-pink);
+	background-color: var(--darkest-purple);
+	padding: 10px;
+	margin: 10px;
+}
+
+#terminal {
+	text-align: center;
+	margin: 0 auto;
+	border: solid var(--hot-pink);
+	color: var(--terminal-green);
+	background-color: black;
+	padding: 10px;
+	margin: 10px;
+}
+
+#runtime {
+	height: 500px;
+	overflow-y: scroll;
+	border: solid var(--terminal-green);
+}

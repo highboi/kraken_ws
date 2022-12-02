@@ -1,0 +1,32 @@
+/*
+DEFINING VARIABLES TO BE USED BY CSS GLOBALLY
+*/
+:root {
+	--green: #adff12;
+	--terminal-green: #cffaad;
+	--blue-green: #00ff9b;
+
+	--red: #ff1236;
+	--dark-red: #780012;
+	--darkest-red: #45000a;
+	--black-red: #120003;
+
+	--grey: #3f3f3f;
+	--light-grey: #7f7f7f;
+	--medium-grey: #2f2f2f;
+	--dark-grey: #1f1f1f;
+	--darkest-grey: #0f0f0f;
+
+	--navy: #6512ff;
+	--dark-navy: #2A0078;
+	--darkest-navy: #180045;
+	--black-navy: #060012;
+
+	--hot-pink: #ff12ac;
+
+	--light-blue: #00ffff;
+
+	--purple: #450082;
+	--dark-purple: #1C0035;
+	--darkest-purple: #010002;
+}
