@@ -36,7 +36,7 @@ async def signal(request: Request, ws: Websocket):
 			#send the new peer to each client on the network
 			for peerid in signalClients:
 				if (peerid != data["userid"]):
-					signalClients[peerid]["socket"].send(peerJoinObj)
+					await signalClients[peerid]["socket"].send(peerJoinObj)
 		elif (event == "disconnect"): #remove a client from the network
 			#remove the entry for this user id from the signal clients
 			signalClients.pop(data["userid"])
@@ -53,15 +53,14 @@ async def signal(request: Request, ws: Websocket):
 			#send the client the peers to connect to
 			await signalClients[data["userid"]]["socket"].send(peersObj)
 		elif (event == "relay-get"): #relay a request for data on the network
-			for attr, value in signalClients.items():
-				print(attr)
-				print(value)
+			#send this request to the recipient on the network on the network
+			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
 		elif (event == "relay-put"):
-			pass
+			#send this writing of data to the recipient on the network
+			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
 		elif (event == "relay-get-response"):
-			pass
-		elif (event == "relay-put-response"):
-			pass
+			#send this get response to the recipient
+			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
 		elif (event == "sdp-offer"):
 			#construct the sdp offer object
 			sdpOffer = {"offer": data["offer"], "event": "sdp-offer", "userid": data["userid"]}
