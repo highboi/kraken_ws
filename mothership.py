@@ -46,6 +46,14 @@ async def signal(request: Request, ws: Websocket):
 			random.shuffle(peerids)
 			peerids = peerids[:6]
 
+			print(peerids)
+
+			#remove this peers user id from the array if it happens to be in there
+			if (data["userid"] in peerids):
+				peerids.remove(data["userid"])
+
+			print(peerids)
+
 			#make the object to send to the client
 			peersObj = {"event": "get-peers", "peers": peerids, "userid": data["userid"]}
 			peersObj = json.dumps(peersObj)

@@ -103,9 +103,6 @@ def onSocketOpen(ws):
 	#request peers to connect to on the network
 	getPeers(ws)
 
-	#request data on the network
-	getData(ws, "example")
-
 #a function for handling messages on the websocket
 def onSocketMessage(websocket, message):
 	global peerids
@@ -117,6 +114,12 @@ def onSocketMessage(websocket, message):
 
 	if (event == "join-net"):
 		print("USER JOINED THE NETWORK")
+
+		#add this peer
+		peerids.append(data["peerid"])
+
+		#request data on the network
+		getData(ws, "example")
 	elif (event == "disconnect"):
 		#remove this user id from the list of peers
 		while (peerids.count(data["userid"])):
@@ -244,13 +247,11 @@ def getData(websocket, key, echo=1):
 		dataObj["recipient"] = peerid
 		websocket.send(json.dumps(dataObj))
 
-	print("***SENT REQUESTS FOR DATA***")
-
 #the main function to execute code
 def main():
 	#make the websocket connection
 	global ws
-	websocket.enableTrace(True)
+	websocket.enableTrace(False)
 	ws = connectSocket("ws://localhost:8000/signal")
 
 	#run the websocket connection and listen for events
