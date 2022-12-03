@@ -115,8 +115,9 @@ def onSocketMessage(websocket, message):
 	if (event == "join-net"):
 		print("USER JOINED THE NETWORK")
 
-		#add this peer
-		peerids.append(data["peerid"])
+		#add this peer if the amount of connected peers are less than 10
+		if (len(peerids) < 10):
+			peerids.append(data["peerid"])
 
 		#request data on the network
 		getData(ws, "example")
