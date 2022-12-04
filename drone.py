@@ -9,8 +9,9 @@ import rel
 import time
 import _thread
 import os
+import time
 import threading
-
+from promise import Promise
 
 '''
 #choose a random port to make the local server
@@ -26,9 +27,6 @@ eel.start("portal.html", port=eelport, size=(1200, 1000))
 GLOBAL VARIABLES
 '''
 
-#a global variable for the websocket
-ws = None
-
 #a global variable to store peers to communicate with
 peerids = []
 
@@ -36,10 +34,7 @@ peerids = []
 userid = str(uuid.uuid1())
 
 #a global object to store recieved data from peers
-datarecv = {}
-
-#a global variable for handling events related to the recieving of data
-dataevent = threading.Event()
+cache = {}
 
 '''
 FUNCTIONS FOR HANDLING STORAGE OF DATA LOCALLY
@@ -104,7 +99,7 @@ def onSocketOpen(ws):
 	getPeers(ws)
 
 #a function for handling messages on the websocket
-def onSocketMessage(websocket, message):
+def onSocketMessage(ws, message):
 	global peerids
 
 	data = json.loads(message)
@@ -113,14 +108,13 @@ def onSocketMessage(websocket, message):
 	print("EVENT: " + str(event))
 
 	if (event == "join-net"):
-		print("USER JOINED THE NETWORK")
-
 		#add this peer if the amount of connected peers are less than 10
 		if (len(peerids) < 10):
 			peerids.append(data["peerid"])
 
 		#request data on the network
-		getData(ws, "example")
+		getData(ws, "example").then(lambda val: print("GETDATA() FUNCTION VALUE: " + str(val)), lambda err: print("ERROR: " + str(err)))
+		#print("DATA FROM THE GETDATA() FUNCTION: " + str(peerdata))
 	elif (event == "disconnect"):
 		#remove this user id from the list of peers
 		while (peerids.count(data["userid"])):
@@ -139,7 +133,7 @@ def onSocketMessage(websocket, message):
 			valueObj = json.dumps(valueObj)
 
 			#send this data back to the original user/requester on the network
-			websocket.send(valueObj)
+			ws.send(valueObj)
 		else:
 			#add our user id to the batonholders
 			data["batonholders"].append(userid)
@@ -150,7 +144,7 @@ def onSocketMessage(websocket, message):
 			#send this relay request to other peers on the network
 			for peerid in peerids:
 				dataObj["recipient"] = peerid
-				websocket.send(json.dumps(dataObj))
+				ws.send(json.dumps(dataObj))
 	elif (event == "relay-put"):
 		#write this piece of data to the local storage
 		writeData(data["key"], data["value"])
@@ -161,11 +155,14 @@ def onSocketMessage(websocket, message):
 		#if the echo limit has not been reached, then echo this message to other peers on the network
 		if (len(data["batonholders"]) < data["echo"]):
 			for peerid in peerids:
-				websocket.send(json.dumps(data))
+				ws.send(json.dumps(data))
 
 	elif (event == "relay-get-response"):
 		#store the recieved data in local storage and fire an event for getting the data
 		print("DATA RESPONSE: " + str(data["key"]) + " " + str(data["value"]))
+
+		#store this value in the cache dictionary
+		cache[data["key"]] = data["value"]
 
 #a function for handling errors with a websocket connection
 def onSocketError(ws, error):
@@ -193,34 +190,34 @@ def connectSocket(uri):
 	return socket
 
 #a function to join the websocket network
-def joinNet(websocket, attrs):
+def joinNet(ws, attrs):
 	#make the request for joining the network
 	joinObj = {"userid": userid, "event": "join-net", "attributes": attrs}
 	joinObj = json.dumps(joinObj)
 
 	#send the request
-	websocket.send(joinObj)
+	ws.send(joinObj)
 
 #a function for requesting peers
-def getPeers(websocket):
+def getPeers(ws):
 	#make the request for peers
 	getPeersObj = {"userid": userid, "event": "get-peers"}
 	getPeersObj = json.dumps(getPeersObj)
 
 	#send the request
-	websocket.send(getPeersObj)
+	ws.send(getPeersObj)
 
 #a function to disconnect from the network
-def disconnectNet(websocket):
+def disconnectNet(ws):
 	#make the request to disconnect from the network
 	disconnectObj = {"userid": userid, "event": "disconnect", "peerids": peerids}
 	disconnectObj = json.dumps(disconnectObj)
 
 	#send the request
-	websocket.send(disconnectObj)
+	ws.send(disconnectObj)
 
 #a function for storing data on the network
-def putData(websocket, key, data, echo=1):
+def putData(ws, key, data, echo=1):
 	#store data in local storage first
 	writeData(key, data)
 
@@ -230,33 +227,34 @@ def putData(websocket, key, data, echo=1):
 	#send the request to each peer
 	for peerid in peerids:
 		dataObj["recipient"] = peerid
-		websocket.send(json.dumps(dataObj))
+		ws.send(json.dumps(dataObj))
 
-#a function for getting data stored on the network
-def getData(websocket, key, echo=1):
+#a function for requesting data stored on the network
+def getData(ws, key, echo=1):
 	#check for data in local storage first
 	localdata = readData(key)
 	if (localdata != None):
 		print(localdata)
 		return localdata
+	else:
+		#make an object for requesting data
+		dataObj = {"key": key, "userid": userid, "event": "relay-get", "echo": echo, "batonholders": []}
 
-	#make an object for requesting data
-	dataObj = {"key": key, "userid": userid, "event": "relay-get", "echo": echo, "batonholders": []}
+		#send the request to each peer
+		for peerid in peerids:
+			dataObj["recipient"] = peerid
+			ws.send(json.dumps(dataObj))
 
-	#send the request to each peer
-	for peerid in peerids:
-		dataObj["recipient"] = peerid
-		websocket.send(json.dumps(dataObj))
+		return Promise(lambda resolve, reject: threading.Timer(5, resolve(cache[key])).start())
 
 #the main function to execute code
 def main():
 	#make the websocket connection
-	global ws
 	websocket.enableTrace(False)
-	ws = connectSocket("ws://localhost:8000/signal")
+	wsapp = connectSocket("ws://localhost:8000/signal")
 
 	#run the websocket connection and listen for events
-	ws.run_forever(dispatcher=rel)
+	wsapp.run_forever(dispatcher=rel)
 	rel.signal(2, rel.abort)
 	rel.dispatch()
 

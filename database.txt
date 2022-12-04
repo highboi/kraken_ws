@@ -1,1 +1,1 @@
-{"example": "data"}
+{"example": "data", "other": "exampledata"}
