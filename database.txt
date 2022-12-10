@@ -1,1 +1,1 @@
-{"example": "data", "other": "exampledata"}
+{"example": "data", "other": "exampledata", "example.txt_0": "this\n", "example.txt_1": "is\n", "example.txt_2": "an\n", "example.txt_3": "example\n", "example.txt_4": "file\n", "example.txt_ledger": ["example.txt_0", "example.txt_1", "example.txt_2", "example.txt_3", "example.txt_4"]}

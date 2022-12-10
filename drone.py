@@ -37,7 +37,7 @@ def initData():
 #function for reading data from the simple db
 def readData(key):
 	#open the file and read the contents
-	file = open("database.txt", "r")
+	file = open("./database.txt", "r")
 	data = file.read()
 	data = json.loads(data)
 	file.close()
@@ -51,7 +51,7 @@ def readData(key):
 #function for writing data to the simple db
 def writeData(key, value):
 	#read current data in the file and alter it
-	file = open("database.txt", "r")
+	file = open("./database.txt", "r")
 	data = file.read()
 	data = json.loads(data)
 	data[key] = value
@@ -135,6 +135,58 @@ async def getData(ws, event_cache, key, echo=1):
 		except TimeoutError:
 			return None
 
+#a function for torrenting a file on the network
+async def torrentFile(websocket, filepath):
+	#if this filepath does not exist, dont torrent the file
+	if (not os.path.exists(filepath)):
+		return False
+
+	#open the file provided from the local machine
+	file = open(filepath)
+
+	#get the name of this file to use as a reference on the network
+	filename = os.path.basename(filepath)
+
+	#get the contents of this file
+	filecontent = file.readlines()
+
+	#a list of fragment keys
+	fragments = []
+
+	#torrent each line in this file
+	for index, line in enumerate(filecontent):
+		#store this fragment of data on the network
+		fragment = filename + "_" + str(index)
+		await putData(websocket, fragment, line)
+
+		#add this fragment id to the fragments list
+		fragments.append(fragment)
+
+	#store a ledger for this file
+	ledger_key = filename + "_ledger"
+	await putData(websocket, ledger_key, fragments)
+
+	#torrenting was successful
+	return True
+
+#a function for downloading a torrented file
+async def downloadTorrent(websocket, filename):
+	#use the global event cache
+	global event_cache
+
+	#get the ledger for this file
+	ledger_key = filename + "_ledger"
+	ledger = await getData(websocket, event_cache, ledger_key)
+
+	#if this file ledger does not exist, then return none
+	if (not ledger):
+		return False
+
+	#get the fragments from the network
+	for fragment in ledger:
+		print("GETTING FRAGMENT: " + str(fragment))
+		frag = await getData(websocket, event_cache, fragment)
+		print("FILE FRAGMENT: " + str(frag))
 
 '''
 THE CONSUMER AND PRODUCERS OF WEBSOCKET MESSAGES
@@ -228,6 +280,10 @@ async def wsProduce(websocket, event_cache):
 	example_result = await getData(websocket, event_cache, "example")
 
 	print("GOT DATA: " + str(example_result))
+
+	await torrentFile(websocket, "./example.txt")
+
+	await downloadTorrent(websocket, "example.txt")
 
 '''
 THE MAIN EVENT LOOP AND PROGRAM STARTING POINT
