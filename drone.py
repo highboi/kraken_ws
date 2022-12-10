@@ -67,7 +67,7 @@ initData()
 
 
 '''
-FUNCTIONS DEALING WITH WEBSOCKETS
+FUNCTIONS DEALING WITH WEBSOCKETS AND EVENTS
 '''
 
 #a function to join the websocket network
@@ -115,8 +115,6 @@ async def getData(ws, event_cache, key, echo=1):
 	#check for data in local storage first
 	localdata = readData(key)
 	if (localdata != None):
-		print("SOURCING LOCAL DATA")
-		print(localdata)
 		return localdata
 	else:
 		#make an object for requesting data
@@ -130,14 +128,11 @@ async def getData(ws, event_cache, key, echo=1):
 			dataObj["recipient"] = peerid
 			await ws.send(json.dumps(dataObj))
 
-		#wait for something to be inserted into the queue and return the cached data
+		#wait for data to be returned from the network, otherwise return none
 		try:
 			result = await asyncio.wait_for(event_cache[key].get(), timeout=1.0)
-			print("SOURCING REMOTE DATA")
-			print(cache[key])
 			return cache[key]
 		except TimeoutError:
-			print("REMOTE DATA FETCHING TIMED OUT")
 			return None
 
 
@@ -182,12 +177,10 @@ async def wsConsume(websocket, event_cache):
 			value = readData(data["key"])
 
 			#if the data is found or if the baton holder limit is reached, send the data back to the requester, otherwise pass it on
-			if (value != None or len(data["batonholders"]) == data["echo"]):
+			if (value != None or (value != None and len(data["batonholders"]) == data["echo"])):
 				#make the relay get response
 				valueObj = {"userid": userid, "event": "relay-get-response", "key": data["key"], "value": value, "recipient": data["userid"], "batonholders": data["batonholders"]}
 				valueObj = json.dumps(valueObj)
-
-				print("SENDING DATA TO THE REQUESTER")
 
 				#send this data back to the original user/requester on the network
 				await websocket.send(valueObj)
@@ -216,9 +209,6 @@ async def wsConsume(websocket, event_cache):
 					await websocket.send(json.dumps(data))
 
 		elif (event == "relay-get-response"):
-			#store the recieved data in local storage and fire an event for getting the data
-			print("DATA RESPONSE: " + str(data["key"]) + " " + str(data["value"]))
-
 			#store this value in the cache dictionary
 			cache[data["key"]] = data["value"]
 
@@ -245,13 +235,11 @@ THE MAIN EVENT LOOP AND PROGRAM STARTING POINT
 
 #the main function to run
 async def main(wss):
+	#use the global event cache variable
 	global event_cache
 
 	#make a websocket connection to the server
 	websocket = await websockets.connect(wss)
-
-	#make a queue for communication between coroutines
-	#queue = asyncio.Queue()
 
 	#make a queue/event for when data interaction is ready
 	event_cache["data-ready"] = asyncio.Queue()
@@ -261,9 +249,6 @@ async def main(wss):
 		wsConsume(websocket, event_cache),
 		wsProduce(websocket, event_cache)
 	)
-
-	#create a task for the websocket consumer to run in the background
-	#consume_task = asyncio.create_task(wsConsume(websocket))
 
 	'''
 	#close the connection once done
