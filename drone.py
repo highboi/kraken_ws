@@ -14,6 +14,9 @@ userid = str(uuid.uuid1())
 #a data cache of outside data not stored locally
 cache = {}
 
+#a cache for queues that represent events
+event_cache = {}
+
 '''
 FUNCTIONS FOR HANDLING STORAGE OF DATA LOCALLY
 '''
@@ -108,17 +111,19 @@ async def putData(ws, key, data, echo=1):
 		await ws.send(json.dumps(dataObj))
 
 #a function for requesting data stored on the network
-async def getData(ws, queue, key, echo=1):
+async def getData(ws, event_cache, key, echo=1):
 	#check for data in local storage first
 	localdata = readData(key)
 	if (localdata != None):
+		print("SOURCING LOCAL DATA")
 		print(localdata)
 		return localdata
 	else:
 		#make an object for requesting data
 		dataObj = {"key": key, "userid": userid, "event": "relay-get", "echo": echo, "batonholders": []}
 
-		print(peerids)
+		#make a new queue for this data request
+		event_cache[key] = asyncio.Queue()
 
 		#send the request to each peer
 		for peerid in peerids:
@@ -126,9 +131,14 @@ async def getData(ws, queue, key, echo=1):
 			await ws.send(json.dumps(dataObj))
 
 		#wait for something to be inserted into the queue and return the cached data
-		result = await queue.get()
-		print(cache)
-		return cache[key]
+		try:
+			result = await asyncio.wait_for(event_cache[key].get(), timeout=1.0)
+			print("SOURCING REMOTE DATA")
+			print(cache[key])
+			return cache[key]
+		except TimeoutError:
+			print("REMOTE DATA FETCHING TIMED OUT")
+			return None
 
 
 '''
@@ -136,7 +146,7 @@ THE CONSUMER AND PRODUCERS OF WEBSOCKET MESSAGES
 '''
 
 #loops through the messages recieved by the websocket
-async def wsConsume(websocket, queue):
+async def wsConsume(websocket, event_cache):
 	#loop through the recieved messages
 	async for message in websocket:
 		global peerids
@@ -153,8 +163,7 @@ async def wsConsume(websocket, queue):
 			if (len(peerids) < 10):
 				peerids.append(data["peerid"])
 
-			if (queue.empty()):
-				await queue.put("join-net")
+			await event_cache["data-ready"].put("data-ready")
 
 		elif (event == "disconnect"):
 			#remove this user id from the list of peers
@@ -166,7 +175,7 @@ async def wsConsume(websocket, queue):
 			peerids = peerids + data["peers"]
 
 			if (len(peerids)):
-				await queue.put("get-peers")
+				await event_cache["data-ready"].put("data-ready")
 
 		elif (event == "relay-get"):
 			#check local data first
@@ -214,10 +223,10 @@ async def wsConsume(websocket, queue):
 			cache[data["key"]] = data["value"]
 
 			#add this event to the queue
-			await queue.put("relay-get-response")
+			await event_cache[data["key"]].put("relay-get-response")
 
 #do all of the interaction with the network here
-async def wsProduce(websocket, queue):
+async def wsProduce(websocket, event_cache):
 	#join the network
 	await joinNet(websocket, {"name": "example"})
 
@@ -225,8 +234,10 @@ async def wsProduce(websocket, queue):
 	await getPeers(websocket)
 
 	#wait for a result/list of peers before proceeding
-	result = await queue.get()
-	await getData(websocket, queue, "example")
+	result = await event_cache["data-ready"].get()
+	example_result = await getData(websocket, event_cache, "example")
+
+	print("GOT DATA: " + str(example_result))
 
 '''
 THE MAIN EVENT LOOP AND PROGRAM STARTING POINT
@@ -234,16 +245,21 @@ THE MAIN EVENT LOOP AND PROGRAM STARTING POINT
 
 #the main function to run
 async def main(wss):
+	global event_cache
+
 	#make a websocket connection to the server
 	websocket = await websockets.connect(wss)
 
 	#make a queue for communication between coroutines
-	queue = asyncio.Queue()
+	#queue = asyncio.Queue()
+
+	#make a queue/event for when data interaction is ready
+	event_cache["data-ready"] = asyncio.Queue()
 
 	#execute the websocket consumer and producer routines
 	await asyncio.gather(
-		wsConsume(websocket, queue),
-		wsProduce(websocket, queue)
+		wsConsume(websocket, event_cache),
+		wsProduce(websocket, event_cache)
 	)
 
 	#create a task for the websocket consumer to run in the background
