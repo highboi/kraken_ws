@@ -182,11 +182,19 @@ async def downloadTorrent(websocket, filename):
 	if (not ledger):
 		return False
 
+	#a list of the fragments/lines of the file
+	fragments = []
+
 	#get the fragments from the network
 	for fragment in ledger:
-		print("GETTING FRAGMENT: " + str(fragment))
 		frag = await getData(websocket, event_cache, fragment)
-		print("FILE FRAGMENT: " + str(frag))
+		fragments.append(frag)
+
+	#write fragments to the new file locally
+	download_file = open("./"+filename, "w")
+	for fragment in fragments:
+		download_file.write(fragment)
+	download_file.close()
 
 '''
 THE CONSUMER AND PRODUCERS OF WEBSOCKET MESSAGES
