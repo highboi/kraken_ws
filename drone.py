@@ -1,5 +1,6 @@
-import uuid
 import os
+import time
+import uuid
 import json
 import asyncio
 import websockets
@@ -123,6 +124,8 @@ async def getData(ws, event_cache, key, echo=1):
 		#make a new queue for this data request
 		event_cache[key] = asyncio.Queue()
 
+		print(peerids)
+
 		#send the request to each peer
 		for peerid in peerids:
 			dataObj["recipient"] = peerid
@@ -162,6 +165,9 @@ async def torrentFile(websocket, filepath):
 		#add this fragment id to the fragments list
 		fragments.append(fragment)
 
+	print("FILE FRAGMENTS:")
+	print(fragments)
+
 	#store a ledger for this file
 	ledger_key = filename + "_ledger"
 	await putData(websocket, ledger_key, fragments)
@@ -190,8 +196,11 @@ async def downloadTorrent(websocket, filename):
 		frag = await getData(websocket, event_cache, fragment)
 		fragments.append(frag)
 
+	#get a timestamp for the download
+	timestamp = str(round(time.time()))
+
 	#write fragments to the new file locally
-	download_file = open("./"+filename, "w")
+	download_file = open("./"+timestamp+"-"+filename, "w")
 	for fragment in fragments:
 		download_file.write(fragment)
 	download_file.close()
@@ -237,7 +246,7 @@ async def wsConsume(websocket, event_cache):
 			value = readData(data["key"])
 
 			#if the data is found or if the baton holder limit is reached, send the data back to the requester, otherwise pass it on
-			if (value != None or (value != None and len(data["batonholders"]) == data["echo"])):
+			if (value != None or len(data["batonholders"]) == data["echo"]):
 				#make the relay get response
 				valueObj = {"userid": userid, "event": "relay-get-response", "key": data["key"], "value": value, "recipient": data["userid"], "batonholders": data["batonholders"]}
 				valueObj = json.dumps(valueObj)
@@ -290,7 +299,6 @@ async def wsProduce(websocket, event_cache):
 	print("GOT DATA: " + str(example_result))
 
 	await torrentFile(websocket, "./example.txt")
-
 	await downloadTorrent(websocket, "example.txt")
 
 '''
