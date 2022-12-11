@@ -1,0 +1,21 @@
+THE INDUSTRIES/MARKETS OF KRAKEN TECHNOLOGIES:
+
+Industry:
+- Automated Mining/Agriculture
+- Automated Manufacturing/Refinement
+- Internet-of-Things Devices
+
+Logistics:
+- Automated Cargo/Transit
+- Automated Distribution/Delivery
+- Real-Time Tracking of Goods
+
+Science:
+- Energy and Propulsion
+- Green Chemistry
+- Neurological/Biomedical Technologies
+
+Robotics/AI:
+- XR (Extended Reality or VR/MR/AR), CV (Computer Vision), and HMIs (Human-Machine Interfaces)
+- Payload/Satellite and Telecom
+- Autonomous Robotic Systems
