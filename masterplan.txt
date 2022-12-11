@@ -1,0 +1,85 @@
+THE INDUSTRIES/MARKETS OF KRAKEN TECHNOLOGIES:
+
+Industry:
+- Automated Mining/Agriculture
+- Automated Manufacturing/Refinement
+- Internet-of-Things Devices
+
+Logistics:
+- Automated Cargo/Transit
+- Automated Distribution/Delivery
+- Real-Time Tracking of Goods
+
+Science:
+- Energy and Propulsion
+- Green Chemistry and Materials Engineering
+- Neurological/Biomedical Technologies
+
+Robotics/AI:
+- XR (Extended Reality or VR/MR/AR), CV (Computer Vision), and HMIs (Human-Machine Interfaces)
+- Payload/Satellite and Telecom
+- Autonomous Robotic Systems
+
+THE PRODUCTS/SERVICES TO WORK ON:
+
+Industry:
+- Internet-of-Things:
+	- Kraken IoT Network Computer
+
+- Manufacturing/Refinement:
+	- Robot Arm with Kraken IoT for Manufacturing
+
+- Mining/Agriculture:
+	- Autonomous Drones for Agricultural Automation
+	- Autonomous Robots for Mining Automation
+
+Logistics:
+- Distribution/Delivery:
+	- Pony Express P2P Mailing App for Package Delivery
+	- Autonomous Drones/Aircraft for Package Delivery/Distribution
+
+- Cargo/Transit:
+	- Autonomous Semi-Trucks
+	- High-Speed Rail for Freight/Cargo
+	- Autonomous Robotics for Docks/Ports
+
+- Real-Time Goods Tracking:
+	- RFID/Bluetooth Tracking
+	- Manifests and Goods Tracking in the Cloud
+
+Science:
+- Energy and Propulsion:
+	- Fusion Energy
+	- Hypersonics
+	- Plasma Physics Research
+	- Hydrogen Fuel-Cells
+
+- Green Chemistry and Materials Engineering:
+	- Chemical Energy Sources
+	- Alternatives to Petroleum-Based Products
+	- Carbon Composites
+	- Smart Materials
+
+- Neurological/Biomedical Technologies:
+	- Life Extension/Aging Prevention
+	- Monitoring of Biological Functions
+	- Drugs for Enhancement of Neurological/Biological Functions
+
+
+Robotics/AI:
+- XR, CV, and HMIs:
+	- AR Glasses
+	- Volumetric Displays
+	- Moving Holographic Displays
+	- Computer Vision Interfaces for Design and Data Visualization
+
+- Payload/Satellite and Telecom:
+	- Modular Satellite Platform for Rapid Space Exploration
+	- Networked Satellites for Telecommunications
+	- Satellites for Space Exploration and Data Gathering
+	- Decentralized Internet/Networking Topology with 5G
+
+- Autonomous Robotics:
+	- Autonomous Transportation/Vehicles
+	- Autonomous Defense Systems
+	- Remote-Control Robotic Systems for Scientific Research and Emergency Situations
