@@ -40,6 +40,16 @@ async def signal(request: Request, ws: Websocket):
 		elif (event == "disconnect"): #remove a client from the network
 			#remove the entry for this user id from the signal clients
 			signalClients.pop(data["userid"])
+
+			print(data)
+
+			#make the packet to send to all peers
+			disconnectObj = {"userid": data["userid"], "event": "disconnect"}
+			disconnectObj = json.dumps(disconnectObj)
+
+			#send this disconnect to all of the peers this node is connected to
+			for peerid in data["peerids"]:
+				await signalClients[peerid]["socket"].send(disconnectObj)
 		elif (event == "get-peers"): #deliver a random number of peers
 			#get a random number of peers
 			peerids = list(signalClients.keys())
