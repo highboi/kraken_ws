@@ -142,7 +142,7 @@ async def getData(ws, event_cache, key, echo=1):
 			return None
 
 #a function for torrenting a file on the network
-async def torrentFile(websocket, filepath):
+async def torrentFile(websocket, filename, filepath):
 	#if this filepath does not exist, dont torrent the file
 	if (not os.path.exists(filepath)):
 		return False
@@ -151,7 +151,7 @@ async def torrentFile(websocket, filepath):
 	file = open(filepath)
 
 	#get the name of this file to use as a reference on the network
-	filename = os.path.basename(filepath)
+	#filename = os.path.basename(filepath)
 
 	#get the contents of this file
 	filecontent = file.readlines()
@@ -202,11 +202,17 @@ async def downloadTorrent(websocket, filename):
 	#get a timestamp for the download
 	timestamp = str(round(time.time()))
 
+	#make a full file location
+	location = "./"+timestamp+"-"+filename
+
 	#write fragments to the new file locally
-	download_file = open("./"+timestamp+"-"+filename, "w")
+	download_file = open(location, "w")
 	for fragment in fragments:
 		download_file.write(fragment)
 	download_file.close()
+
+	#return the location of the saved file
+	return location
 
 '''
 THE CONSUMER AND PRODUCERS OF WEBSOCKET MESSAGES
@@ -230,6 +236,7 @@ async def wsConsume(websocket, event_cache):
 			if (len(peerids) < 10):
 				peerids.append(data["peerid"])
 
+			#signal that data interaction with the network is ready
 			await event_cache["data-ready"].put("data-ready")
 
 		elif (event == "disconnect"):
@@ -240,6 +247,7 @@ async def wsConsume(websocket, event_cache):
 			#add the new peers to the list of peer ids
 			peerids = peerids + data["peers"]
 
+			#signal that data interaction with the network is ready if there are peers connected
 			if (len(peerids)):
 				await event_cache["data-ready"].put("data-ready")
 
@@ -252,6 +260,8 @@ async def wsConsume(websocket, event_cache):
 				#make the relay get response
 				valueObj = {"userid": userid, "event": "relay-get-response", "key": data["key"], "value": value, "recipient": data["userid"], "batonholders": data["batonholders"]}
 				valueObj = json.dumps(valueObj)
+
+				print("SENDING DATA TO RECIPIENT")
 
 				#send this data back to the original user/requester on the network
 				await websocket.send(valueObj)
@@ -326,12 +336,9 @@ async def wsProduce(websocket, event_cache):
 				print(peerid)
 			print()
 		elif (command == "get"):
-			'''
-			example_result = await getData(websocket, event_cache, command_parts[1])
-			'''
-			#make sure the user gave the proper inputs for this command to work
+			#make sure the user gives the proper inputs for this command to work
 			if (len(command_parts) != 2):
-				print("Please specify a data key")
+				print("Please specify a data key only")
 				print()
 				continue
 
@@ -340,9 +347,6 @@ async def wsProduce(websocket, event_cache):
 			print("RETURNED DATA: " + str(data_result))
 			print()
 		elif (command == "put"):
-			'''
-			await putData(websocket, command_parts[1], command_parts[2])
-			'''
 			#make sure the user gave the proper inputs for this command to work
 			if (len(command_parts) != 3):
 				print("Please specify a data key-value pair ONLY")
@@ -357,12 +361,42 @@ async def wsProduce(websocket, event_cache):
 			'''
 			await downloadTorrent(websocket, "example.txt")
 			'''
-			pass
+
+			#make sure the user gives the proper inputs for this command to work
+			if (len(command_parts) != 2):
+				print("Please specify a file name only")
+				print()
+				continue
+
+			#download the torrent from the network
+			location = await downloadTorrent(websocket, command_parts[1])
+
+			#if there is no such file, then notify the user
+			if (not location):
+				print("No such file on the network: " + str(command_parts[1]))
+				print()
+				continue
+
+			#print the location of the saved file
+			print("Saved " + str(command_parts[1]) + " to " + location)
+			print()
 		elif (command == "fput"):
-			'''
-			await torrentFile(websocket, "./example.txt")
-			'''
-			pass
+			#make sure the user gives the proper inputs for this command to work
+			if (len(command_parts) != 3):
+				print("Please specify the file name and location only")
+				print()
+				continue
+
+			#torrent the file and get results
+			result = await torrentFile(websocket, command_parts[1], command_parts[2])
+
+			#print the results of this torrenting
+			if (result):
+				print("File successfully torrented on network")
+				print()
+			else:
+				print("File failed to torrent or does not exist on local filesystem")
+				print()
 		elif (command == "exit"):
 			#disconnect from the network
 			print("TERMINATING NODE FROM NETWORK...")
@@ -408,8 +442,5 @@ async def main(wss):
 		wsProduce(websocket, event_cache)
 	)
 
-	'''
-	'''
-
 #run the main function
-asyncio.run(main("ws://localhost:8000/signal"))
+asyncio.run(main("ws://localhost:8000/"))
