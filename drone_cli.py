@@ -326,6 +326,7 @@ async def wsProduce(websocket, event_cache):
 		command_parts = terminal_command.split()
 		command = command_parts[0]
 
+		#examine the command
 		if (command == "clear"):
 			#clear the screen and continue to show the command prompt
 			os.system("cls" if os.name == "nt" else "clear")
@@ -397,6 +398,18 @@ async def wsProduce(websocket, event_cache):
 			else:
 				print("File failed to torrent or does not exist on local filesystem")
 				print()
+		elif (command == "help"):
+			#print out the commands the user can use on the network
+			print("Available Commands:")
+			print('''
+help --> Show this help message
+peers --> List peers on the network
+get [DATA KEY] --> Fetch a simple piece of data from the network
+put [DATA KEY] [DATA VALUE] --> Store a simple piece of data on the network
+fget [FILE NAME] --> Fetch and download a file from the network
+fput [FILE NAME] [LOCAL FILE LOCATION] --> Store a file on the network
+exit --> Terminates the program and closes the connection to the network
+			''')
 		elif (command == "exit"):
 			#disconnect from the network
 			print("TERMINATING NODE FROM NETWORK...")
@@ -410,16 +423,8 @@ async def wsProduce(websocket, event_cache):
 			print("EXITING THE PROGRAM...")
 			sys.exit()
 		else:
-			#print out the commands the user can use on the network
-			print("Invalid Command. Use These:")
-			print('''
-peers --> List peers on the network
-get [DATA KEY] --> Fetch a simple piece of data from the network
-put [DATA KEY] [DATA VALUE] --> Store a simple piece of data on the network
-fget [FILE NAME] --> Fetch and download a file from the network
-fput [FILE NAME] [LOCAL FILE LOCATION] --> Store a file on the network
-exit --> Terminates the program and closes the connection to the network
-			''')
+			#execute the terminal command on the operating system
+			os.system(terminal_command)
 
 '''
 THE MAIN EVENT LOOP AND PROGRAM STARTING POINT
@@ -444,3 +449,4 @@ async def main(wss):
 
 #run the main function
 asyncio.run(main("ws://localhost:8000/"))
+#asyncio.run(main("ws://beacon.wrt:8000/"))
