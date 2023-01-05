@@ -1,79 +1,52 @@
+'''
 import asyncio
-import websockets
+import socketserver
 import json
 import random
 
-#a global dictionary of clients on the network
-signalClients = {}
+class MyTCPHandler(socketserver.BaseRequestHandler):
 
-#function for processing requests to the server
-async def process(websocket):
-	#loop through each message sent to the websocket
-	async for message in websocket:
-		#process each request as json
-		data = json.loads(message)
-		event = data["event"]
+	def handle(self):
+		self.data = self.request.recv(4096).strip()
+		print(self.client_address[0], "connected:")
+		print(self.data)
 
-		print("EVENT: " + str(event))
+		self.request.sendall(self.data.upper())
 
-		#respond to different types of events
-		if (event == "join-net"):
-			#add this client to the global dictionary
-			signalClients[data["userid"]] = {"userid": data["userid"], "socket": websocket, "attributes": data["attributes"]}
+host, port = "", 8000
 
-			#make a message to the other clients about a new peer
-			peerJoinObj = {"event": "join-net", "peerid": data["userid"], "peerattributes": data["attributes"]}
-			peerJoinObj = json.dumps(peerJoinObj)
+with socketserver.TCPServer((host, port), MyTCPHandler) as server:
+	print("STARTING SOCKET SERVER...")
+	server.serve_forever()
+'''
 
-			#send the new peer to each client on the network
-			for peerid in signalClients:
-				if (peerid != data["userid"]):
-					await signalClients[peerid]["socket"].send(peerJoinObj)
-		elif (event == "disconnect"):
-			#remove the entry for this user id from the signal clients
-			signalClients.pop(data["userid"])
+import socket
+import threading
 
-			#make the packet to send to all peers
-			disconnectObj = {"userid": data["userid"], "event": "disconnect"}
-			disconnectObj = json.dumps(disconnectObj)
+def handle_client(client_sock):
+	while True:
+		data = client_sock.recv(4096)
 
-			#send this disconnect to all of the peers this node is connected to
-			for peerid in data["peerids"]:
-				await signalClients[peerid]["socket"].send(disconnectObj)
-		elif (event == "get-peers"):
-			#get a random number of peers
-			peerids = list(signalClients.keys())
-			random.shuffle(peerids)
-			peerids = peerids[:6]
+		if not data:
+			break
 
-			#remove this peers user id from the array if it happens to be in there
-			if (data["userid"] in peerids):
-				peerids.remove(data["userid"])
+		client_sock.sendall(data.upper())
 
-			#make the object to send to the client
-			peersObj = {"event": "get-peers", "peers": peerids, "userid": data["userid"]}
-			peersObj = json.dumps(peersObj)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-			#send the client the peers to connect to
-			await signalClients[data["userid"]]["socket"].send(peersObj)
-		elif (event == "relay-get"):
-			#relay this get request to the proper recipient
-			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
-		elif (event == "relay-put"):
-			#relay this data writing to the proper recipient
-			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
-		elif (event == "relay-get-response"):
-			#send data on the network back to the proper recipient
-			await signalClients[data["recipient"]]["socket"].send(json.dumps(data))
+sock.bind(("", 8000))
 
+sock.listen()
 
-#the main point of execution
-async def main():
-	print("BOOTING WEBSOCKET SERVER...")
+print("STARTING SOCKET SERVER...")
 
-	#run the server indefinitely
-	async with websockets.serve(process, "localhost", 8000):
-		await asyncio.Future()
+while True:
+	client_sock, client_addr = sock.accept()
+	print("New client connected:", client_addr)
 
-#run the server
-asyncio.run(main())
+	print(client_sock)
+
+	client_thread = threading.Thread(target=handle_client, args=(client_sock,))
+	client_thread.start()
+
+sock.close()

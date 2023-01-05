@@ -307,16 +307,18 @@ async def wsProduce(websocket, event_cache):
 	await getPeers(websocket)
 
 	#the name of this node on the kraken network
-	drone_name = "KRAKEN_DRONE_" + userid
-	print(drone_name + " CONNECTING TO NETWORK...")
+	print("CONNECTING TO THE KRAKEN NETWORK...")
 
 	#wait for a result/list of peers before proceeding
 	result = await event_cache["data-ready"].get()
 
+	#print the user id after connecting
+	print("CONNECTED WITH ID:", userid)
+
 	#the command event loop
 	while True:
 		#get a command to execute
-		terminal_command = input(drone_name + "> ")
+		terminal_command = input("kraken-network$ ")
 
 		#check for an empty input
 		if (terminal_command == ""):
@@ -331,6 +333,10 @@ async def wsProduce(websocket, event_cache):
 			#clear the screen and continue to show the command prompt
 			os.system("cls" if os.name == "nt" else "clear")
 			continue
+		elif (command == "myid"):
+			#print the local peer id to the user
+			print(userid)
+			print()
 		elif (command == "peers"):
 			#list all of the peer ids on the network
 			for peerid in peerids:
@@ -403,6 +409,7 @@ async def wsProduce(websocket, event_cache):
 			print("Available Commands:")
 			print('''
 help --> Show this help message
+myid --> Print out your peer ID on the network
 peers --> List peers on the network
 get [DATA KEY] --> Fetch a simple piece of data from the network
 put [DATA KEY] [DATA VALUE] --> Store a simple piece of data on the network
@@ -438,6 +445,9 @@ async def main(wss):
 	#make a websocket connection to the server
 	websocket = await websockets.connect(wss)
 
+	print(websocket.local_address)
+	print(websocket.remote_address)
+
 	#make a queue/event for when data interaction is ready
 	event_cache["data-ready"] = asyncio.Queue()
 
@@ -448,5 +458,5 @@ async def main(wss):
 	)
 
 #run the main function
-asyncio.run(main("ws://localhost:8000/"))
-#asyncio.run(main("ws://beacon.wrt:8000/"))
+#asyncio.run(main("ws://localhost:8000/"))
+asyncio.run(main("ws://beacon.wrt:8000/"))
