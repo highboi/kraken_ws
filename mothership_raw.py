@@ -1,25 +1,3 @@
-'''
-import asyncio
-import socketserver
-import json
-import random
-
-class MyTCPHandler(socketserver.BaseRequestHandler):
-
-	def handle(self):
-		self.data = self.request.recv(4096).strip()
-		print(self.client_address[0], "connected:")
-		print(self.data)
-
-		self.request.sendall(self.data.upper())
-
-host, port = "", 8000
-
-with socketserver.TCPServer((host, port), MyTCPHandler) as server:
-	print("STARTING SOCKET SERVER...")
-	server.serve_forever()
-'''
-
 import socket
 import threading
 
